@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.paginator import Paginator
 from .models import Post
+from .forms import PostForm
 
 posts_per_page = 10
 
@@ -22,3 +23,16 @@ def post_detail(request, post_id):
 
     }
     return render(request, 'posts/post_detail.html', context)
+
+
+def post_create(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+        if form.is_valid():
+            commit = form.save(commit=False)
+            commit.author = request.user
+            commit.save()
+            return redirect('posts:index')
+        return render(request, 'posts/create_post.html', {'form': form})
+    form = PostForm()
+    return render(request, 'posts/create_post.html', {'form': form})
