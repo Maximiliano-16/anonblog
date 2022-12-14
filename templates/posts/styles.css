@@ -1,0 +1,16 @@
+.but_for_tab {
+    width: fit-content;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    padding: 5px 20px;
+    border: 1px solid #1e1e1e;
+    border-radius: 10px;
+    cursor: pointer;
+}
+.hidden_block {
+    display: none;
+}
+.visible_block {
+    display: block;
+}

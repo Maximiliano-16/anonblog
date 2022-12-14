@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load thumbnail %}
 {% load user_filters %}
 {% block title %}
@@ -6,30 +7,18 @@
 {% endblock %}
 {% block header %}Последние обновления на сайте{% endblock %}
 {% block content %}
+    <link rel="stylesheet" href="styles.css">
     <main>
         <div class="row">
             <aside class="col-12 col-md-3">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        Дата публикации: {{ post.pub_date|date:"d E Y" }}
+                        Дата публикации: {{ post.pub_date|date:"Y-m-d H:i:s" }}
                     </li>
                     <li class="list-group-item">
-                        Группа: {{ post.text }}
-                        <a href="">
-                            все записи группы
-                        </a>
+
                     </li>
-                    <li class="list-group-item">
-                        Автор: {{ post.author.get_full_name }}
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Всего постов автора: <span>{{ post.author.posts.count }}</span>
-                    </li>
-                    <li class="list-group-item">
-                        <a href="">
-                            все посты пользователя
-                        </a>
-                    </li>
+
                 </ul>
             </aside>
             <article class="col-12 col-md-9">
@@ -37,42 +26,143 @@
                     <img alt="" class="card-img my-2" src="{{ im.url }}">
                 {% endthumbnail %}
                 <p>
-                    {{ post.text }}
+                <h4>{{ post.title }}</h4>
                 </p>
-                {% if post.author == request.user %}
-                    <a class="btn btn-primary" href="{% url 'posts:post_edit' post.pk %}">
-                        редактировать запись
-                    </a>
-                    {% if user.is_authenticated %}
-                        <div class="card my-4">
-                            <h5 class="card-header">Добавить комментарий:</h5>
-                            <div class="card-body">
-                                <form method="post" action="{% url 'posts:add_comment' post.id %}">
-                                    {% csrf_token %}
-                                    <div class="form-group mb-2">
-                                        {{ form.text|addclass:"form-control" }}
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Отправить</button>
-                                </form>
-                            </div>
-                        </div>
-                    {% endif %}
 
-                    {% for comment in comments %}
-                        <div class="media mb-4">
-                            <div class="media-body">
-                                <h5 class="mt-0">
-                                    <a href="{% url 'posts:profile' comment.author.username %}">
-                                        {{ comment.author.username }}
-                                    </a>
-                                </h5>
-                                <p>
-                                    {{ comment.text }}
-                                </p>
-                            </div>
-                        </div>
-                    {% endfor %}
+                <p>
+                    {{ post.body }}
+                </p>
+
+                <div class="container">
+                    <div class="row">
+                        <form action="{% url 'posts:like_post' post.id %}" class="col-12 col-md-1" method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="post_id" value="{{ post.id }}" class="btn btn-primary">Like
+                            </button>
+                        </form>
+                        <form action="{% url 'posts:dislike_post' post.id %}" class="col-12 col-md-3" method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="post_id" value="{{ post.id }}" class="btn btn-danger">Dislike
+                            </button>
+                        </form>
+                    </div>
+                    {{ post.likes }} - Like{{ post.likes|pluralize }}
+                    {{ post.dislikes }} - Dislike{{ post.dislikes|pluralize }}
+                </div>
+
+
+                {% if comments.count != 0 %}
+                    {% with comments.count as total_comments %}
+                        <hr>
+                        <figure>
+                            <blockquote class="blockquote">
+                                <div class="shadow-sm p-2 bg-white rounded">
+                                    Комментариев {{ total_comments }}
+                                </div>
+                            </blockquote>
+                        </figure>
+                    {% endwith %}
                 {% endif %}
+                {#                <div class="card my-4">#}
+                {#                    <h5 class="card-header">Добавить комментарий:</h5>#}
+                {#                    <div class="card-body">#}
+                {#                        <form method="post" action="{% url 'posts:add_comment' post.id %}">#}
+                {#                            {% csrf_token %}#}
+                {#                            <div class="form-group mb-2">#}
+                {#                                {{ form.text|addclass:"form-control" }}#}
+                {#                            </div>#}
+                {#                            <button type="submit" class="btn btn-primary">Отправить комментарий</button>#}
+                {#                        </form>#}
+                {#                    </div>#}
+                {#                </div>#}
+                {##}
+                {#                {% for comment in comments %}#}
+                {#                    <div class="media mb-4">#}
+                {#                        <div class="media-body">#}
+                {#                            <h5 class="mt-0">#}
+                {#                                <a href="{% url 'posts:profile' comment.author.username %}">#}
+                {#                                    {{ comment.author.username }}#}
+                {#                                </a>#}
+                {#                            </h5>#}
+                {#                            <li class="list-group-item">#}
+                {#                                {{ post.pub_date|date:"Y-m-d H:i:s" }}#}
+                {#                            </li>#}
+                {#                            <p>#}
+                {#                                {{ comment.text }}#}
+                {#                            </p>#}
+                {#                        </div>#}
+                {#                    </div>#}
+                {#                {% endfor %}#}
+
+
+                <div class="card my-4">
+                    <h5 class="card-header">Добавить комментарий:</h5>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'posts:add_comment' post.id %}">
+                            {% csrf_token %}
+                            <div class="form-group mb-2">
+                                {{ form.text|addclass:"form-control" }}
+                            </div>
+                            <button type="submit" class="btn btn-primary">Отправить</button>
+                        </form>
+                    </div>
+                </div>
+                <script src="hidden.js"></script>
+
+                {% for comment in comments %}
+                    {% if forloop.counter == 3 %}
+
+                        <details>
+
+
+                        <summary>
+                            <div class="media mb-4">
+                                <div class="media-body">
+                                    <blockquote class="blockquote">
+                                        <div class="shadow-sm p-3 bg-white">
+
+                                            Все комментарии
+                                        </div>
+                                    </blockquote>
+                                </div>
+                            </div>
+
+                        </summary>
+
+
+
+                    {% endif %}
+                    <div class="media mb-4">
+                        <div class="media-body">
+                            <div class="alert alert-primary" role="alert">
+                                {{ comment.created|date:'H:i:s d E Y' }}
+
+                            </div>
+                            <figure>
+                                <blockquote class="blockquote">
+                                    <div class="shadow-sm p-3 bg-white">
+                                        {{ comment.text|linebreaks }}
+                                    </div>
+                                </blockquote>
+                            </figure>
+                        </div>
+                    </div>
+
+
+
+                {% empty %}
+                    <hr>
+                    <figure>
+                        <blockquote class="blockquote">
+                            <div class="shadow-sm p-2 bg-white rounded">
+                                Комментариев нет, будь первым!
+                            </div>
+                        </blockquote>
+                    </figure>
+                {% endfor %}
+                </details>
+
+
             </article>
         </div>
     </main>
