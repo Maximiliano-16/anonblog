@@ -43,3 +43,56 @@ ____
 Оставление комментария:
 ![комментарий](https://user-images.githubusercontent.com/98755619/209427866-8d5d4eb1-bafa-457b-a188-5e5286c96d51.png)
 
+### 6. Значимые части кода
+примеры модели Post
+```
+class Post(models.Model):
+    title = models.CharField(max_length=200)
+    pub_date = models.DateTimeField(auto_now_add=True)
+    author = models.ForeignKey(
+        'auth.User',
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+    body = models.TextField()
+    image = models.ImageField(
+        'Картинка',
+        upload_to='posts/',
+        blank=True
+    )
+    likes = models.IntegerField(default=0)
+    dislikes = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        ordering = ['-pub_date']
+```
+Основные view функции:
+```
+def index(request):
+    post_list = Post.objects.all()
+    paginator = Paginator(post_list, posts_per_page)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context = {
+        'page_obj': page_obj,
+    }
+
+    return render(request, 'posts/index.html', context)
+
+
+def post_create(request):
+    if request.method == 'POST':
+        form = PostForm(request.POST,
+                        files=request.FILES or None,)
+        if form.is_valid():
+            commit = form.save(commit=False)
+            commit.save()
+            return redirect('posts:index')
+        return render(request, 'posts/create_post.html', {'form': form})
+    form = PostForm()
+    return render(request, 'posts/create_post.html', {'form': form})
+```
