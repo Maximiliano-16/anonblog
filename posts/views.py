@@ -35,9 +35,6 @@ def post_create(request):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    # is_liked = False
-    # if post.likes.filter(id=request.user.id).exists():
-    #     is_liked = True
     form = CommentForm(request.POST)
     comments = post.comments.all()
 
@@ -45,7 +42,6 @@ def post_detail(request, post_id):
         'post': post,
         'form': form,
         'comments': comments,
-        # 'is_liked': is_liked,
 
     }
     return render(request, 'posts/post_detail.html', context)
